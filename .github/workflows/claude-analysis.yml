@@ -1,0 +1,24 @@
+name: H1 PoC - full chain
+on:
+  issues:
+    types: [opened]
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: anthropics/claude-code-action@v1
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          claude_args: |
+            --allowedTools "Read" --json-schema '{"type":"object","properties":{"summary":{"type":"string"}},"required":["summary"]}'
+      - name: consume (pattern from docs/usage.md:244-246)
+        if: always()
+        run: |
+          OUTPUT='${{ steps.claude.outputs.structured_output }}'
+          echo "got: $OUTPUT"
